@@ -12,19 +12,18 @@ import java.util.List;
 import java.util.Map;
 
 import static io.restassured.RestAssured.given;
+import static learn.springws.restfulwsrestassured.TestConstants.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TestCreateUser {
+public class CreateUserTest {
 
-    private static final String APPLICATION_JSON = "application/json";
-    private static final String CONTEXT_PATH = "/photo-app";
     private static final int PUBLIC_ID_EXPECTED_LENGTH = 32;
     private static final int USER_ID_EXPECTED_LENGTH = 32;
 
     @BeforeEach
     void setUp() {
-        RestAssured.baseURI = "http://localhost";
-        RestAssured.port = 8888;
+        RestAssured.baseURI = BASE_URI;
+        RestAssured.port = SERVER_PORT;
     }
 
     @Test
@@ -59,7 +58,7 @@ public class TestCreateUser {
                 .when()
                         .post(CONTEXT_PATH + "/users")
                 .then()
-                        .statusCode(200)
+                        .statusCode(STATUS_OK)
                         .contentType(APPLICATION_JSON)
                         .extract()
                         .response();
