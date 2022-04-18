@@ -2,16 +2,20 @@ package learn.springws.restfulwsrestassured;
 
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
+import java.util.List;
 import java.util.Map;
 
 import static io.restassured.RestAssured.*;
 import static learn.springws.restfulwsrestassured.TestConstants.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class UsersWebServiceEndpointTest {
+
+    private static String userId;
+    private static String authorization;
 
     @BeforeEach
     void setUp() {
@@ -19,11 +23,12 @@ public class UsersWebServiceEndpointTest {
         RestAssured.port = SERVER_PORT;
     }
 
+    @Order(1)
     @Test
     void testUserLogin() {
         Map<String, Object> loginDetails = Map.of(
-                "email", "jane3@example.org",
-                "password", "123"
+                "email", EMAIL,
+                "password", PASSWORD
         );
         final Response response =
                     given()
@@ -36,10 +41,43 @@ public class UsersWebServiceEndpointTest {
                         .statusCode(STATUS_OK)
                         .extract()
                         .response();
-        final String userId = response.header("UserId");
+        userId = response.header("UserId");
         assertNotNull(userId);
-        final String authorization = response.header("Authorization");
+        authorization = response.header("Authorization");
         assertNotNull(authorization);
         assertTrue(authorization.startsWith("Bearer "));
+    }
+
+    @Order(2)
+    @Test
+    void testGetUser() {
+        final Response response =
+                given()
+                    .contentType(APPLICATION_JSON)
+                    .accept(APPLICATION_JSON)
+                    .header("Authorization", authorization)
+                    .pathParam("id", userId)
+                .when()
+                    .get(CONTEXT_PATH + "/users/{id}")
+                .then()
+                    .statusCode(STATUS_OK)
+                    .contentType(APPLICATION_JSON)
+                    .extract()
+                    .response();
+        String receivedUserId = response.jsonPath().getString("userId");
+        assertEquals(userId, receivedUserId);
+        String email = response.jsonPath().getString("email");
+        assertEquals(EMAIL, email);
+        String firstName = response.jsonPath().getString("firstName");
+        assertEquals(USER_FIRST_NAME, firstName);
+        String lastName = response.jsonPath().getString("lastName");
+        assertEquals(USER_LAST_NAME, lastName);
+
+        List<Map<String, String>> addresses = response.jsonPath().getList("addresses");
+        assertNotNull(addresses);
+        assertEquals(USER_ADDRESSES.size(), addresses.size());
+        String addressId = addresses.get(0).get("publicId");
+        assertNotNull(addressId);
+        assertEquals(PUBLIC_ID_LENGTH, addressId.length());
     }
 }
