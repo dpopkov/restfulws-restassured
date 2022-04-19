@@ -80,4 +80,44 @@ public class UsersWebServiceEndpointTest {
         assertNotNull(addressId);
         assertEquals(PUBLIC_ID_LENGTH, addressId.length());
     }
+
+    @Order(3)
+    @Test
+    void testUpdateUser() {
+        final String firstNameUpdated = USER_FIRST_NAME + " upd";
+        final String lastNameUpdated = USER_LAST_NAME + " upd";
+        Map<String, Object> userDetails = Map.of(
+                "firstName", firstNameUpdated,
+                "lastName", lastNameUpdated
+        );
+        final Response response =
+                given()
+                        .contentType(APPLICATION_JSON)
+                        .accept(APPLICATION_JSON)
+                        .header("Authorization", authorization)
+                        .pathParam("id", userId)
+                        .body(userDetails)
+                .when()
+                        .put(CONTEXT_PATH + "/users/{id}")
+                .then()
+                        .statusCode(STATUS_OK)
+                        .contentType(APPLICATION_JSON)
+                        .extract()
+                        .response();
+        String receivedUserId = response.jsonPath().getString("userId");
+        assertEquals(userId, receivedUserId);
+        String email = response.jsonPath().getString("email");
+        assertEquals(EMAIL, email);
+        String firstName = response.jsonPath().getString("firstName");
+        assertEquals(firstNameUpdated, firstName);
+        String lastName = response.jsonPath().getString("lastName");
+        assertEquals(lastNameUpdated, lastName);
+
+        List<Map<String, String>> addresses = response.jsonPath().getList("addresses");
+        assertNotNull(addresses);
+        assertEquals(USER_ADDRESSES.size(), addresses.size());
+        String addressId = addresses.get(0).get("publicId");
+        assertNotNull(addressId);
+        assertEquals(PUBLIC_ID_LENGTH, addressId.length());
+    }
 }
