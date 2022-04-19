@@ -120,4 +120,25 @@ public class UsersWebServiceEndpointTest {
         assertNotNull(addressId);
         assertEquals(PUBLIC_ID_LENGTH, addressId.length());
     }
+
+    @Order(4)
+    @Test
+    void testDeleteUser() {
+        final Response response =
+                given()
+                        .accept(APPLICATION_JSON)
+                        .header("Authorization", authorization)
+                        .pathParam("id", userId)
+                        .when()
+                .delete(CONTEXT_PATH + "/users/{id}")
+                        .then()
+                .statusCode(STATUS_OK)
+                        .contentType(APPLICATION_JSON)
+                        .extract()
+                        .response();
+        String operationResult = response.jsonPath().getString("result");
+        assertEquals("SUCCESS", operationResult);
+        String operationName = response.jsonPath().getString("operationName");
+        assertEquals("DELETE", operationName);
+    }
 }
