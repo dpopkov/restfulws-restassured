@@ -16,6 +16,7 @@ public class UsersWebServiceEndpointTest {
 
     private static String userId;
     private static String authorization;
+    private static String userIdToDelete;
 
     @BeforeEach
     void setUp() {
@@ -121,6 +122,7 @@ public class UsersWebServiceEndpointTest {
         assertEquals(PUBLIC_ID_LENGTH, addressId.length());
     }
 
+    @Disabled("Now the DELETE operation cannot be performed without ADMIN role")
     @Order(4)
     @Test
     void testDeleteUser() {
@@ -133,6 +135,51 @@ public class UsersWebServiceEndpointTest {
                 .delete(CONTEXT_PATH + "/users/{id}")
                         .then()
                 .statusCode(STATUS_OK)
+                        .contentType(APPLICATION_JSON)
+                        .extract()
+                        .response();
+        String operationResult = response.jsonPath().getString("result");
+        assertEquals("SUCCESS", operationResult);
+        String operationName = response.jsonPath().getString("operationName");
+        assertEquals("DELETE", operationName);
+    }
+
+    @Order(5)
+    @Test
+    void testAdminLogin() {
+        Map<String, Object> loginDetails = Map.of(
+                "email", ADMIN_EMAIL,
+                "password", ADMIN_PASSWORD
+        );
+        final Response response =
+                given()
+                        .contentType(APPLICATION_JSON)
+                        .accept(APPLICATION_JSON)
+                        .body(loginDetails)
+                .when()
+                        .post(CONTEXT_PATH + "/users/login")
+                .then()
+                        .statusCode(STATUS_OK)
+                        .extract()
+                        .response();
+        userIdToDelete = userId;
+        userId = response.header("UserId");
+        authorization = response.header("Authorization");
+        assertNotNull(authorization);
+    }
+
+    @Order(6)
+    @Test
+    void testDeleteUserByAdmin() {
+        final Response response =
+                given()
+                        .accept(APPLICATION_JSON)
+                        .header("Authorization", authorization)
+                        .pathParam("id", userIdToDelete)
+                .when()
+                        .delete(CONTEXT_PATH + "/users/{id}")
+                .then()
+                        .statusCode(STATUS_OK)
                         .contentType(APPLICATION_JSON)
                         .extract()
                         .response();

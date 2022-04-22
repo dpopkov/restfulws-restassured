@@ -14,6 +14,8 @@ public class TestConstants {
     public static final String USER_LAST_NAME = "Doe";
     public static final String EMAIL = "jane3@example.org";
     public static final String PASSWORD = "123";
+    public static final String ADMIN_EMAIL = "admin@example.org";
+    public static final String ADMIN_PASSWORD = "admin";
     public static final int PUBLIC_ID_LENGTH = 32;
     public static final int USER_ID_LENGTH = 32;
 
