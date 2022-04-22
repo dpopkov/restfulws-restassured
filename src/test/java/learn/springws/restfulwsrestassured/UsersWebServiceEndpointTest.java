@@ -122,10 +122,9 @@ public class UsersWebServiceEndpointTest {
         assertEquals(PUBLIC_ID_LENGTH, addressId.length());
     }
 
-    @Disabled("Now the DELETE operation cannot be performed without ADMIN role")
     @Order(4)
     @Test
-    void testDeleteUser() {
+    void testDeleteUserByNonAdminReturns403() {
         final Response response =
                 given()
                         .accept(APPLICATION_JSON)
@@ -134,14 +133,10 @@ public class UsersWebServiceEndpointTest {
                         .when()
                 .delete(CONTEXT_PATH + "/users/{id}")
                         .then()
-                .statusCode(STATUS_OK)
-                        .contentType(APPLICATION_JSON)
+                .statusCode(STATUS_FORBIDDEN)
                         .extract()
                         .response();
-        String operationResult = response.jsonPath().getString("result");
-        assertEquals("SUCCESS", operationResult);
-        String operationName = response.jsonPath().getString("operationName");
-        assertEquals("DELETE", operationName);
+        assertNotNull(response);
     }
 
     @Order(5)

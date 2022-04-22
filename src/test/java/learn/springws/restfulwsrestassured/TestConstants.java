@@ -9,6 +9,7 @@ public class TestConstants {
     public static final String APPLICATION_JSON = "application/json";
     public static final String CONTEXT_PATH = "/photo-app";
     public static final int STATUS_OK = 200;
+    public static final int STATUS_FORBIDDEN = 403;
 
     public static final String USER_FIRST_NAME = "Jane";
     public static final String USER_LAST_NAME = "Doe";
