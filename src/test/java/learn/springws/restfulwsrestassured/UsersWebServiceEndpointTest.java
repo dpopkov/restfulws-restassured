@@ -17,6 +17,7 @@ public class UsersWebServiceEndpointTest {
     private static String userId;
     private static String authorization;
     private static String userIdToDelete;
+    private static String userId2;
 
     @BeforeEach
     void setUp() {
@@ -51,6 +52,28 @@ public class UsersWebServiceEndpointTest {
 
     @Order(2)
     @Test
+    void testSecondUserLogin() {
+        Map<String, Object> loginDetails = Map.of(
+                "email", EMAIL2,
+                "password", PASSWORD
+        );
+        final Response response =
+                given()
+                        .contentType(APPLICATION_JSON)
+                        .accept(APPLICATION_JSON)
+                        .body(loginDetails)
+                .when()
+                        .post(CONTEXT_PATH + "/users/login")
+                .then()
+                        .statusCode(STATUS_OK)
+                        .extract()
+                        .response();
+        userId2 = response.header("UserId");
+        assertNotNull(userId);
+    }
+
+    @Order(3)
+    @Test
     void testGetUser() {
         final Response response =
                 given()
@@ -82,7 +105,7 @@ public class UsersWebServiceEndpointTest {
         assertEquals(PUBLIC_ID_LENGTH, addressId.length());
     }
 
-    @Order(3)
+    @Order(4)
     @Test
     void testUpdateUser() {
         final String firstNameUpdated = USER_FIRST_NAME + " upd";
@@ -122,14 +145,14 @@ public class UsersWebServiceEndpointTest {
         assertEquals(PUBLIC_ID_LENGTH, addressId.length());
     }
 
-    @Order(4)
+    @Order(5)
     @Test
-    void testDeleteUserByNonAdminReturns403() {
+    void testDeleteOtherUserByNonAdminReturns403() {
         final Response response =
                 given()
                         .accept(APPLICATION_JSON)
                         .header("Authorization", authorization)
-                        .pathParam("id", userId)
+                        .pathParam("id", userId2)
                         .when()
                 .delete(CONTEXT_PATH + "/users/{id}")
                         .then()
@@ -139,7 +162,28 @@ public class UsersWebServiceEndpointTest {
         assertNotNull(response);
     }
 
-    @Order(5)
+    @Order(6)
+    @Test
+    void testDeleteSelfByNonAdmin() {
+        final Response response =
+                given()
+                        .accept(APPLICATION_JSON)
+                        .header("Authorization", authorization)
+                        .pathParam("id", userId)
+                .when()
+                        .delete(CONTEXT_PATH + "/users/{id}")
+                .then()
+                        .statusCode(STATUS_OK)
+                        .extract()
+                        .response();
+        assertNotNull(response);
+        String operationResult = response.jsonPath().getString("result");
+        assertEquals("SUCCESS", operationResult);
+        String operationName = response.jsonPath().getString("operationName");
+        assertEquals("DELETE", operationName);
+    }
+
+    @Order(7)
     @Test
     void testAdminLogin() {
         Map<String, Object> loginDetails = Map.of(
@@ -157,13 +201,13 @@ public class UsersWebServiceEndpointTest {
                         .statusCode(STATUS_OK)
                         .extract()
                         .response();
-        userIdToDelete = userId;
+        userIdToDelete = userId2;
         userId = response.header("UserId");
         authorization = response.header("Authorization");
         assertNotNull(authorization);
     }
 
-    @Order(6)
+    @Order(8)
     @Test
     void testDeleteUserByAdmin() {
         final Response response =

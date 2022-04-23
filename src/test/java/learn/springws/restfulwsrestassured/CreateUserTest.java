@@ -60,4 +60,29 @@ public class CreateUserTest {
             fail(e.getMessage());
         }
     }
+
+    @Test
+    void testCreateSecondUser() {
+        Map<String, Object> userDetails = Map.of(
+                "firstName", USER2_FIRST_NAME,
+                "lastName", USER2_LAST_NAME,
+                "email", EMAIL2,
+                "password", PASSWORD
+        );
+        final Response response =
+                given()
+                        .contentType(APPLICATION_JSON)
+                        .accept(APPLICATION_JSON)
+                        .body(userDetails)
+                .when()
+                        .post(CONTEXT_PATH + "/users")
+                .then()
+                        .statusCode(STATUS_OK)
+                        .contentType(APPLICATION_JSON)
+                        .extract()
+                        .response();
+        final String userId = response.jsonPath().getString("userId");
+        assertNotNull(userId);
+        assertEquals(USER_ID_LENGTH, userId.length());
+    }
 }
